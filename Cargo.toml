@@ -1,0 +1,13 @@
+[package]
+name = "crabsparov"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "libsparov"
+path = "src/lib.rs"
+
+[dependencies]
+derive-try-from-primitive = "1.0.0"
+derive_more = "0.99.17"
+nom = "7"
