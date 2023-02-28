@@ -1,109 +1,94 @@
-mod parse;
+pub mod parse;
 
-use nom::error::ParseError;
-
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 enum Color {
     White,
     Black,
 }
 
-use derive_try_from_primitive::TryFromPrimitive;
-#[derive(Copy, Clone, TryFromPrimitive)]
-#[repr(u8)]
-enum Piece {
-    WPawn = 'P' as u8,
-    WKnight = 'N' as u8,
-    WBishop = 'B' as u8,
-    WRook = 'R' as u8,
-    WQueen = 'Q' as u8,
-    WKing = 'K' as u8,
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Piece {
+    WPawn,
+    WKnight,
+    WBishop,
+    WRook,
+    WQueen,
+    WKing,
 
-    BPawn = 'p' as u8,
-    BKnight = 'n' as u8,
-    BBishop = 'b' as u8,
-    BRook = 'r' as u8,
-    BQueen = 'q' as u8,
-    BKing = 'k' as u8,
+    BPawn,
+    BKnight,
+    BBishop,
+    BRook,
+    BQueen,
+    BKing,
 }
 
-struct Board([Option<Piece>; 64]);
+impl TryFrom<char> for Piece {
+    type Error = &'static str;
+    
+    fn try_from(value: char) -> Result<Self, Self::Error> {
+	match value {
+	    'p' => Ok(Piece::BPawn),
+	    'P' => Ok(Piece::WPawn),
+	    'n' => Ok(Piece::BKnight),
+	    'N' => Ok(Piece::WKnight),
+	    'b' => Ok(Piece::BBishop),
+	    'B' => Ok(Piece::WBishop),
+	    'r' => Ok(Piece::BRook),
+	    'R' => Ok(Piece::WRook),
+	    'q' => Ok(Piece::BQueen),
+	    'Q' => Ok(Piece::WQueen),
+	    'k' => Ok(Piece::BKing),
+	    'K' => Ok(Piece::WKing),
+
+	    _ => Err("Invalid character: {value}"),
+	}
+    }
+}
+
+impl Into<char> for Piece {
+    fn into(self) -> char {
+	match self {
+	    Piece::WPawn => 'P',
+	    Piece::WKnight => 'N',
+	    Piece::WBishop => 'B',
+	    Piece::WRook => 'R',
+	    Piece::WQueen => 'Q',
+	    Piece::WKing => 'K',
+	    Piece::BPawn => 'p',
+	    Piece::BKnight => 'n',
+	    Piece::BBishop => 'b',
+	    Piece::BRook => 'r',
+	    Piece::BQueen => 'q',
+	    Piece::BKing => 'k',
+	}
+    }
+}
+
+#[derive(Debug)]
+pub struct Board([Option<Piece>; 64]);
 
 impl Board {
     pub fn new() -> Self {
         Board([None; 64])
     }
+}
 
-    pub fn parse_row(i: parse::Input) -> Result<Vec<Option<Piece>>, nom::error::Error<parse::Input>> {
-        use nom::bytes::complete::is_a;
-	use nom::error::context;
+impl std::fmt::Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+	let mut output = String::new();
 
-        let (i, pieces) = is_a("pPnNbBrRqQkK12345678")(i).unwrap();
-
-	if i.len() > 0 {
-	    panic!("Error in FEN, row contains invalid characters: {i}");
-	}
-	
-	if pieces.len() > 8 {
-	    panic!("Error in FEN, piece row too long: {pieces}");
-	}
-
-        let mut row = Vec::new();
-	let mut index: usize = 0;
-
-        for c in pieces.chars() {
-	    if index > 7 {
-		panic!("Error in FEN, row has too many elements");
-	    }
-
-	    if let Some(num) = c.to_digit(10) {
-		if !((1..=8).contains(&num)) {
-		    panic!("Error in FEN, row can only have [0..8] empty spaces");
+	for i in (0..8).rev() {
+	    for j in 0..8 {
+		let p = self.0[i * 8 + j];
+		match p {
+		    Some(piece) => output.push(piece.into()),
+		    None => output.push('•'),
 		}
-
-		for _ in 0..num {
-		    row.push(None);
-		}
-		
-		index += num as usize;
-		continue;
 	    }
-	    
-	    row.push(Some(Piece::try_from(c as u8).unwrap()));
-	    index += 1;
-	    continue;
-        }
-
-        Ok(row)
-    }
-
-    fn parse(i: parse::Input) -> parse::Output<Self> {
-        use nom::bytes::complete::{is_a, is_not, take_till};
-        use nom::character::{complete::char, is_space};
-        use nom::multi::many_till;
-
-        let mut board = Self::new();
-        let mut index: usize = 1;
-
-	let pieces: &str;
-	
-        (i, pieces) = take_till(|c| c == ' ')(i).expect("No piece information provided");
-
-	let mut index: usize = 0;
-	
-        for line in pieces.split('/') {
-	    let row = Self::parse_row(line).expect("Row parsing failed");
-
-	    for p in row.iter().rev() {
-		if p.is_some() {
-		    board.0[index] = *p;
-		}
-
-		index += 1;
-	    }
+	    output.push('\n');
 	}
-
-        todo!()
+	write!(f, "{}", output)
     }
 }
 
@@ -112,10 +97,4 @@ struct ChessState {
     turn: u32,
     side: Color,
     board: Board,
-}
-
-impl ChessState {
-    fn parse(input: parse::Input) -> parse::Output<Self> {
-        todo!()
-    }
 }
