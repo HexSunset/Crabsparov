@@ -1,4 +1,5 @@
 use rustyline::{DefaultEditor, Result};
+use rustyline::config::Config;
 
 fn main() -> Result<()> {
 
@@ -8,9 +9,9 @@ fn main() -> Result<()> {
 	let readline = rl.readline("FEN: ");
 	match readline {
 	    Ok(line) => {
-		let board = libsparov::parse::parse_board(&line).unwrap().1;
+		let position = libsparov::parse::parse_fen(&line).unwrap().1;
 
-		println!("{}", board);
+		println!("{}", position.board);
 	    },
 	    Err(err) => {
 		eprintln!("ERROR: {:?}", err);

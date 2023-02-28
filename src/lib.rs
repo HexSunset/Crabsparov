@@ -1,7 +1,7 @@
 pub mod parse;
 
 #[derive(Copy, Clone, Debug)]
-enum Color {
+pub enum Color {
     White,
     Black,
 }
@@ -14,7 +14,6 @@ pub enum Piece {
     WRook,
     WQueen,
     WKing,
-
     BPawn,
     BKnight,
     BBishop,
@@ -93,8 +92,8 @@ impl std::fmt::Display for Board {
 }
 
 //TODO: Add enum for state of game, ex: checkmate, check, stalemate, invalid position etc.
-struct ChessState {
-    turn: u32,
-    side: Color,
-    board: Board,
+pub struct ChessState {
+    pub turn: u32,
+    pub side: Color,
+    pub board: Board,
 }

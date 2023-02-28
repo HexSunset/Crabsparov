@@ -1,4 +1,4 @@
-use super::{Piece, Board};
+use super::{Color, Piece, Board, ChessState};
 
 use nom::error::context;
 
@@ -50,7 +50,22 @@ fn parse_row(i: Input) -> Output<[Option<Piece>; 8]> {
     Ok((i, pieces))
 }
 
-pub fn parse_board(input: Input) -> Output<Board> {
+fn parse_color(i: Input) -> Output<Color> {
+    use nom::character::complete::one_of;
+
+    let (i, color) = context("Color is either w or b", one_of("wb"))(i)?;
+
+    let c = match color {
+	'w' => Color::White,
+	'b' => Color::Black,
+	
+	_ => unreachable!(),
+    };
+
+    Ok((i, c))
+}
+
+fn parse_board(input: Input) -> Output<Board> {
     use nom::bytes::complete::tag;
 
     let mut board = Board::new();
@@ -72,6 +87,21 @@ pub fn parse_board(input: Input) -> Output<Board> {
     }
 
     Ok((i, board))
+}
+
+pub fn parse_fen(i: Input) -> Output<ChessState> {
+    let (i, board) = parse_board(i)?;
+    let (i, side) = parse_color(i)?;
+    
+
+    Ok((
+	i,    
+	ChessState {
+	    turn: todo!(),
+	    side,
+	    board,
+	}
+    ))
 }
 
 #[cfg(test)]
