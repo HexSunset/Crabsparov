@@ -92,7 +92,9 @@ fn parse_board(input: Input) -> Output<Board> {
 pub fn parse_fen(i: Input) -> Output<ChessState> {
     let (i, board) = parse_board(i)?;
     let (i, side) = parse_color(i)?;
-    
+    // TODO: parse castling
+    // TODO: parse en passant square
+    // TODO: parse turn numbers
 
     Ok((
 	i,    
