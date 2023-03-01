@@ -9,12 +9,16 @@ fn main() -> Result<()> {
 	let readline = rl.readline("FEN: ");
 	match readline {
 	    Ok(line) => {
-		let position = libsparov::parse::parse_fen(&line).unwrap().1;
+		let position = libsparov::parse::parse_fen(&line);
 
-		println!("{}", position.board);
+		match position {
+		    Ok((_, pos)) => println!("{}", pos.board),
+		    Err(e) => eprintln!("ERROR: Parsing failed. {}", e),
+		}
 	    },
+
 	    Err(err) => {
-		eprintln!("ERROR: {:?}", err);
+		eprintln!("ERROR: {}", err);
 		break;
 	    }
 	}
